@@ -5,4 +5,4 @@ import image
 maze = grid.PolarGrid(10)
 Recurse(maze)
 
-image.save_radial(maze)
+image.save_radial(maze, 'circle.png')
