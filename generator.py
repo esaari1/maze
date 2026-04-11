@@ -6,20 +6,14 @@ SOUTH = 2
 WEST = 3
 
 def BinaryTree(maze):
-    for r in range(1, len(maze)):
-        # right side, all open to NORTH, except top row
-        maze[r][maze.cols-1].link(maze[r-1][maze.cols-1])
+    for cell in maze.all_cells():
+        neighbors = []
+        if cell.upNeighbor(): neighbors.append(cell.upNeighbor())
+        if cell.rightNeighbor(): neighbors.append(cell.rightNeighbor())
 
-        for c in range(maze.cols - 1):
-            val = random.randint(NORTH, EAST)
-            if val == NORTH:
-                maze[r][c].link(maze[r-1][c])
-            else:
-                maze[r][c].link(maze[r][c+1])
-
-    # top row, all open to EAST, except right column
-    for c in range(maze.cols - 1):
-        maze[0][c].link(maze[0][c+1])
+        if len(neighbors) > 0:
+            n = random.choice(neighbors)
+            cell.link(n)
 
 
 def Sidewinder(maze):

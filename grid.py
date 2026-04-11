@@ -16,6 +16,11 @@ class Grid:
         self.prepare()
         self.init_cells()
 
+    def all_cells(self):
+        for row in self.maze:
+            for cell in row:
+                yield cell
+
     def prepare(self):
         self.maze = [[GridCell(row, col) for col in range(self.cols)] for row in range(self.rows)]
 

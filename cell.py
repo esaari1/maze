@@ -30,8 +30,11 @@ class Cell():
         return random.choice(filtered_neighbors)
 
     # link this cell to other
-    def link(self, other):
-        pass
+    def link(self, other): pass
+
+    def upNeighbor(self): pass
+
+    def rightNeighbor(self): pass
 
 
 class GridCell(Cell):
@@ -46,6 +49,11 @@ class GridCell(Cell):
         self.links[idx] = True
         other.links[(idx + 2) % 4] = True
 
+    def upNeighbor(self):
+        return self.neighbors[0]
+
+    def rightNeighbor(self):
+        return self.neighbors[1]
 
 class PolarCell(Cell):
     def __init__(self, row, col):
@@ -70,3 +78,9 @@ class PolarCell(Cell):
         if len(filtered_neighbors) == 0:
             return None
         return random.choice(filtered_neighbors)
+
+    def upNeighbor(self):
+        return self.inward
+
+    def rightNeighbor(self):
+        return self.ccw
