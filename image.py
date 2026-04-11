@@ -45,7 +45,7 @@ def gradient(t, colors):
     return (r, g, b)
 
 
-def save_grid(maze):
+def save_grid(maze, fname):
     img_width, img_height = maze.cols * 50, maze.rows * 50
     wall_width = 0.001
     wall_height = 0.001
@@ -116,9 +116,10 @@ def save_grid(maze):
     # ctx.set_source_rgb(0, 0, 0)
     # ctx.stroke()
 
-    surface.write_to_png("grid.png")  # Output to PNG
+    surface.write_to_png(fname)
 
-def save_radial(maze):
+
+def save_radial(maze, fname):
     size = 1000
     hsize = size / 2
     wall_width = 0.001
@@ -137,20 +138,20 @@ def save_radial(maze):
     ctx.translate(0.01, 0.01)
     ctx.scale(0.98, 0.98)
 
-    for r in range(maze.rows):
+    for r in range(1, maze.rows):
         theta = 2 * math.pi / len(maze[r])
         inner_radius = r * cell_size
         outer_radius = inner_radius + cell_size
 
-        for c in range(maze.cols):
-            theta_ccw = c * theta
+        for cell in maze[r]:
+            theta_ccw = cell.col * theta
             theta_cw = theta_ccw + theta
 
-            if not maze[r][c].links[NORTH]:
+            if not cell.isLinked(cell.inward):
                 ctx.new_sub_path()
                 ctx.arc(0.5, 0.5, inner_radius, theta_ccw, theta_cw)
 
-            if not maze[r][c].links[EAST]:
+            if not cell.isLinked(cell.cw):
                 x1 = 0.5 + (inner_radius * math.cos(theta_cw))
                 y1 = 0.5 + (inner_radius * math.sin(theta_cw))
                 x2 = 0.5 + (outer_radius * math.cos(theta_cw))
@@ -166,4 +167,4 @@ def save_radial(maze):
     ctx.set_line_width(wall_width)
     ctx.stroke()
 
-    surface.write_to_png("radial.png")
+    surface.write_to_png(fname)

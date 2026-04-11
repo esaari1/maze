@@ -1,6 +1,7 @@
+import math
 import random
 
-from cell import Cell
+from cell import Cell, GridCell, PolarCell
 
 NORTH = 0
 EAST = 1
@@ -13,20 +14,23 @@ class Grid:
         self.cols = cols
         self.dist = None
         self.prepare()
+        self.init_cells()
+
+    def prepare(self):
+        self.maze = [[GridCell(row, col) for col in range(self.cols)] for row in range(self.rows)]
+
+    def init_cells(self):
         for row in self.maze:
             for cell in row:
                 if cell:
                     if cell.row > 0:
                         cell.neighbors[NORTH] = self.maze[cell.row - 1][cell.col]
-                    if cell.row < rows - 1:
+                    if cell.row < self.rows - 1:
                         cell.neighbors[SOUTH] = self.maze[cell.row + 1][cell.col]
                     if cell.col > 0:
                         cell.neighbors[WEST] = self.maze[cell.row][cell.col - 1]
-                    if cell.col < cols - 1:
+                    if cell.col < self.cols - 1:
                         cell.neighbors[EAST] = self.maze[cell.row][cell.col + 1]
-
-    def prepare(self):
-        self.maze = [[Cell(row, col) for col in range(self.cols)] for row in range(self.rows)]
 
     def __getitem__(self, row): return self.maze[row]
 
@@ -63,7 +67,6 @@ class Grid:
             print(bottom)
 
 class MaskGrid(Grid):
-
     def __init__(self, mask):
         self.mask = mask
         super().__init__(mask.rows, mask.cols)
@@ -73,8 +76,59 @@ class MaskGrid(Grid):
         for r in range(self.rows):
             for c in range(self.cols):
                 if self.mask[r][c]:
-                    self.maze[r][c] = Cell(r, c)
+                    self.maze[r][c] = GridCell(r, c)
 
     def random_cell(self):
         (row, col) = self.mask.random_cell()
         return self.maze[row][col]
+
+
+class PolarGrid(Grid):
+    def __init__(self, rows):
+        super().__init__(rows, 1)
+
+    # Setup as a unit circle (radius 1)
+    def prepare(self):
+        self.maze = []
+        self.maze.append([PolarCell(0, 0)])
+        row_height = 1 / self.rows
+
+        for row in range(1, self.rows):
+            self.maze.append([])
+            inner_radius = row / self.rows
+            inner_circumfeence = 2 * math.pi * inner_radius
+
+            prev_count = len(self.maze[row - 1])
+            cell_width = inner_circumfeence / prev_count
+            ratio = round(cell_width / row_height)
+
+            cells = prev_count * ratio
+            for col in range(cells):
+                self.maze[row].append(PolarCell(row, col))
+
+    def init_cells(self):
+        for row in self.maze:
+            for cell in row:
+                if cell.row > 0:
+                    column = (cell.col + 1) % len(row)
+                    cell.cw = self.maze[cell.row][column]
+                    cell.cw.ccw = cell
+                    cell.neighbors.append(cell.cw)
+                    cell.cw.neighbors.append(cell)
+
+                    column = cell.col if cell.col > 0 else len(row) - 1
+                    cell.ccw = self.maze[cell.row][cell.col - 1]
+                    cell.ccw.cw = cell
+                    cell.neighbors.append(cell.ccw)
+                    cell.ccw.neighbors.append(cell)
+
+                    ratio = len(self.maze[cell.row]) / len(self.maze[cell.row - 1])
+                    parent = self.maze[cell.row - 1][int(cell.col / ratio)]
+                    parent.outward.append(cell)
+                    cell.inward = parent
+                    cell.neighbors.append(cell.inward)
+                    cell.inward.neighbors.append(cell)
+
+    def random_cell(self):
+        row = random.choice(self.maze)
+        return random.choice(row)

@@ -21,10 +21,10 @@ Recurse(maze)
 
 # Calculate distances from a random cell
 #dist = Distances(random.choice(random.choice(maze.maze)))
-#dist = Distances(maze[0][0])
+dist = Distances(maze[0][0])
 #dist = Distances(maze[int(rows/2)][int(cols/2)])
-#dist.calc_distances()
-#maze.dist = dist
+dist.calc_distances()
+maze.dist = dist
 
 maze.printMaze()
 
@@ -33,7 +33,7 @@ maze.printMaze()
 # maze.dist = path
 # maze.printMaze()
 
-#image.save_grid(maze)
+image.save_grid(maze, 'grid.png')
 
 m = mask.from_file('sarah.txt')
 maze2 = grid.MaskGrid(m)
@@ -41,4 +41,4 @@ Recurse(maze2)
 maze2.dist = Distances(maze2[0][3])
 maze2.dist.calc_distances()
 
-image.save_grid(maze2)
+image.save_grid(maze2, 'sarah.png')
