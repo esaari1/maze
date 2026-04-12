@@ -32,6 +32,8 @@ class Cell():
     # link this cell to other
     def link(self, other): pass
 
+    def hasLink(self): pass
+
     def upNeighbor(self): pass
 
     def rightNeighbor(self): pass
@@ -48,6 +50,9 @@ class GridCell(Cell):
         idx = self.neighbors.index(other)
         self.links[idx] = True
         other.links[(idx + 2) % 4] = True
+
+    def hasLink(self):
+        return any(l for l in self.links)
 
     def upNeighbor(self):
         return self.neighbors[0]
@@ -66,6 +71,9 @@ class PolarCell(Cell):
     def link(self, other):
         self.links.append(other)
         other.links.append(self)
+
+    def hasLink(self):
+        return len(self.links) > 0
 
     def isLinked(self, other):
         if other is None:

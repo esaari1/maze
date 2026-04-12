@@ -24,22 +24,26 @@ def Sidewinder(maze):
     for r in range(1, maze.rows):
         group = []
 
-        for c in range(maze.cols):
+        for c in range(len(maze[r])):
             group.append(c)
             val = random.randint(NORTH, EAST)
 
-            if val == EAST and c < maze.cols - 1:
-                maze[r][c].link(maze[r][c+1])
+            if val == EAST and maze[r][c].rightNeighbor() is not None:
+                maze[r][c].link(maze[r][c].rightNeighbor())
             else:
                 # Open north side of random cell in group
                 cell = random.choice(group)
-                maze[r][cell].link(maze[r-1][cell])
+                maze[r][cell].link(maze[r][cell].upNeighbor())
                 group = []
 
 # Random walk
 def AldousBroder(maze):
     cell = maze.random_cell()
-    unvisited = maze.rows * maze.cols - 1
+    count = 0
+    for cel in maze.all_cells():
+        count += 1
+
+    unvisited = count - 1
 
     while unvisited > 0:
         next_cell = cell.randomNeighbor()
@@ -90,8 +94,8 @@ def HuntAndKill(maze):
             # hunt for new cell
             cell = None
             for r in range(maze.rows):
-                for c in range(maze.cols):
-                    if maze[r][c] and maze[r][c].links == [False] * 4:
+                for c in range(len(maze[r])):
+                    if maze[r][c] and not maze[r][c].hasLink():
                         neighbor = maze[r][c].randomLinkedNeighbor()
                         if neighbor:
                             cell = maze[r][c]

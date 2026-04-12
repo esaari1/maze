@@ -7,9 +7,9 @@ SOUTH = 2
 WEST = 3
 
 greens = [
-    (0, 1, 1, 1),
+    (0, 0.9, 1, 0.9),
     (0.5, 0, 1, 0),
-    (1, 0, 0, 0)
+    (1, 0, 0.1, 0)
 ]
 
 sunburst = [
@@ -76,7 +76,7 @@ def save_grid(maze, fname):
         for r in range(maze.rows):
             for c in range(maze.cols):
                 if maze[r][c] and maze[r][c] in maze.dist.distances:
-                    (red, green, blue) = gradient(maze.dist.intensity(maze[r][c]), pinks2)
+                    (red, green, blue) = gradient(maze.dist.intensity(maze[r][c]), greens)
                     ctx.rectangle(c * cell_w, r * cell_h, cell_w , cell_h)
                     ctx.set_source_rgb(red, green, blue)
                     ctx.fill()

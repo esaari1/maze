@@ -1,6 +1,3 @@
-import random
-import sys
-
 from distance import Distances
 from generator import *
 import grid
@@ -21,8 +18,8 @@ Recurse(maze)
 
 # Calculate distances from a random cell
 #dist = Distances(random.choice(random.choice(maze.maze)))
-dist = Distances(maze[0][0])
-#dist = Distances(maze[int(rows/2)][int(cols/2)])
+#dist = Distances(maze[0][0])
+dist = Distances(maze[int(rows/2)][int(cols/2)])
 dist.calc_distances()
 maze.dist = dist
 
