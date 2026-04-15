@@ -4,24 +4,15 @@ from distance import Distances
 from generator import *
 import grid
 import image
-import mask
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--size', type=int, default=20)
 parser.add_argument('-a', '--algorithm', choices=['binary', 'side', 'aldous', 'wilson', 'hunt', 'recurse'], default='recurse')
 parser.add_argument('-d', '--distances', choices=['none', 'center', 'corner', 'random'], default='none')
-parser.add_argument('-f', '--filename', default='grid.png')
-parser.add_argument('-m', '--mask')
+parser.add_argument('-f', '--filename', default='hex.png')
 args = parser.parse_args()
 
-rows = args.size
-cols = args.size
-
-if args.mask:
-    m = mask.from_file(args.mask)
-    maze = grid.MaskGrid(m)
-else:
-    maze = grid.Grid(rows, cols)
+maze = grid.HexGrid(args.size, args.size)
 
 if args.algorithm == 'binary':
     BinaryTree(maze)
@@ -38,7 +29,7 @@ else:
 
 if args.distances != 'none':
     if args.distances == 'center':
-        dist = Distances(maze[int(rows/2)][int(cols/2)])
+        dist = Distances(maze[int(args.size / 2)][int(args.size / 2)])
     elif args.distances == 'corner':
         cell = None
         gen = maze.all_cells()
@@ -50,11 +41,4 @@ if args.distances != 'none':
     dist.calc_distances()
     maze.dist = dist
 
-maze.printMaze()
-
-# Create a path from distance origin to lower right corner
-# path = dist.path_to(maze[rows-1][cols-1])
-# maze.dist = path
-# maze.printMaze()
-
-image.save_grid(maze, args.filename)
+image.save_hex(maze, args.filename)

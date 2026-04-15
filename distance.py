@@ -14,9 +14,8 @@ class Distances():
 
         while not q.empty():
             cell = q.get()
-            for idx in range(len(cell.neighbors)):
-                if cell.links[idx] and cell.neighbors[idx] not in self.distances:
-                    n = cell.neighbors[idx]
+            for n in cell.neighbors:
+                if n not in self.distances and cell.isLinked(n):
                     self.distances[n] = self.distances[cell] + 1
                     self.max = self.distances[n]
                     q.put(n)

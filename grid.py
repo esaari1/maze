@@ -1,7 +1,7 @@
 import math
 import random
 
-from cell import Cell, GridCell, PolarCell
+from cell import GridCell, PolarCell, HexCell
 
 NORTH = 0
 EAST = 1
@@ -20,6 +20,13 @@ class Grid:
         for row in self.maze:
             for cell in row:
                 yield cell
+
+    def cell_at(self, row, col):
+        if row < 0 or row > len(self.maze) -1:
+            return None
+        if col < 0 or col > len(self.maze[row]) - 1:
+            return None
+        return self.maze[row][col]
 
     def prepare(self):
         self.maze = [[GridCell(row, col) for col in range(self.cols)] for row in range(self.rows)]
@@ -137,3 +144,34 @@ class PolarGrid(Grid):
     def random_cell(self):
         row = random.choice(self.maze)
         return random.choice(row)
+
+
+class HexGrid(Grid):
+    def __init__(self, rows, cols):
+        super().__init__(rows, cols)
+
+    def prepare(self):
+        self.maze = [[HexCell(row, col) for col in range(self.cols)] for row in range(self.rows)]
+
+    def init_cells(self):
+        for cell in self.all_cells():
+            if cell.col % 2 == 0:
+                north_diag = cell.row - 1
+                south_diag = cell.row
+            else:
+                north_diag = cell.row
+                south_diag = cell.row + 1
+
+            cell.n = self.cell_at(cell.row - 1, cell.col)
+            cell.nw = self.cell_at(north_diag, cell.col - 1)
+            cell.ne = self.cell_at(north_diag, cell.col + 1)
+            cell.s = self.cell_at(cell.row + 1, cell.col)
+            cell.sw = self.cell_at(south_diag, cell.col - 1)
+            cell.se = self.cell_at(south_diag, cell.col + 1)
+
+            cell.add_neighbor(cell.n)
+            cell.add_neighbor(cell.nw)
+            cell.add_neighbor(cell.ne)
+            cell.add_neighbor(cell.s)
+            cell.add_neighbor(cell.sw)
+            cell.add_neighbor(cell.se)

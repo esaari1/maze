@@ -7,9 +7,9 @@ SOUTH = 2
 WEST = 3
 
 greens = [
-    (0, 0.9, 1, 0.9),
+    (0, .8, 1, .8),
     (0.5, 0, 1, 0),
-    (1, 0, 0.1, 0)
+    (1, 0, 0.2, 0)
 ]
 
 sunburst = [
@@ -138,6 +138,37 @@ def save_radial(maze, fname):
     ctx.translate(0.01, 0.01)
     ctx.scale(0.98, 0.98)
 
+    if maze.dist:
+        # center circle
+        (red, green, blue) = gradient(0, sunburst)
+        ctx.set_source_rgb(red, green, blue)
+        ctx.arc(0.5, 0.5, cell_size, 0, 2 * math.pi)
+        ctx.fill()
+
+        # cell wedges
+        for r in range(len(maze)):
+            theta = 2 * math.pi / len(maze[r])
+            inner_radius = r * cell_size
+            outer_radius = inner_radius + cell_size
+
+            for cell in maze[r]:
+                theta_ccw = cell.col * theta
+                theta_cw = theta_ccw + theta
+
+                (red, green, blue) = gradient(maze.dist.intensity(cell), sunburst)
+                ctx.set_source_rgb(red, green, blue)
+
+                x1 = 0.5 + (inner_radius * math.cos(theta_cw))
+                y1 = 0.5 + (inner_radius * math.sin(theta_cw))
+                x2 = 0.5 + (outer_radius * math.cos(theta_cw))
+                y2 = 0.5 + (outer_radius * math.sin(theta_cw))
+
+                ctx.arc(0.5, 0.5, inner_radius, theta_ccw, theta_cw)
+                ctx.line_to(x2, y2)
+                ctx.arc_negative(0.5, 0.5, outer_radius, theta_cw, theta_ccw)
+                ctx.close_path()
+                ctx.fill()
+
     for r in range(1, maze.rows):
         theta = 2 * math.pi / len(maze[r])
         inner_radius = r * cell_size
@@ -166,5 +197,100 @@ def save_radial(maze, fname):
     ctx.set_source_rgb(0, 0, 0)
     ctx.set_line_width(wall_width)
     ctx.stroke()
+
+    surface.write_to_png(fname)
+
+
+def save_hex(maze, fname):
+    hex_width = 100
+    wall_width = 0.001
+
+    #hex_width = size / len(maze)
+    a_size = hex_width / 4
+    b_size = hex_width / 2 * math.sqrt(3) / 2
+    hex_height = b_size * 2
+
+    img_width = int(3 * a_size * maze.cols + a_size + 0.5)
+    img_height = int(hex_height * maze.rows + b_size + 0.5)
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, img_width, img_height)
+    ctx = cairo.Context(surface)
+
+    ctx.scale(img_width, img_height)
+
+    # background
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.rectangle(0, 0, 1, 1)
+    ctx.fill()
+
+    ctx.translate(0.01, 0.01)
+    ctx.scale(0.98, 0.98)
+
+    if maze.dist:
+        for cell in maze.all_cells():
+            cx = hex_width/2 + 3 * cell.col * a_size
+            cy = b_size + cell.row * hex_height
+            cy += b_size if cell.col % 2 == 1 else 0
+
+            x_fw = int(cx - hex_width / 2) / img_width
+            x_nw = int(cx - a_size) / img_width
+            x_ne = int(cx + a_size) / img_width
+            x_fe = int(cx + hex_width / 2) / img_width
+
+            y_n = int(cy - b_size) / img_height
+            y_c = int(cy) / img_height
+            y_s = int(cy + b_size) / img_height
+
+            (red, green, blue) = gradient(maze.dist.intensity(cell), greens)
+            ctx.move_to(x_fw, y_c)
+            ctx.line_to(x_nw, y_s)
+            ctx.line_to(x_ne, y_s)
+            ctx.line_to(x_fe, y_c)
+            ctx.line_to(x_ne, y_n)
+            ctx.line_to(x_nw, y_n)
+            ctx.close_path()
+            ctx.set_source_rgb(red, green, blue)
+            ctx.fill()
+
+    for cell in maze.all_cells():
+        cx = hex_width/2 + 3 * cell.col * a_size
+        cy = b_size + cell.row * hex_height
+        cy += b_size if cell.col % 2 == 1 else 0
+
+        x_fw = int(cx - hex_width / 2) / img_width
+        x_nw = int(cx - a_size) / img_width
+        x_ne = int(cx + a_size) / img_width
+        x_fe = int(cx + hex_width / 2) / img_width
+
+        y_n = int(cy - b_size) / img_height
+        y_c = int(cy) / img_height
+        y_s = int(cy + b_size) / img_height
+
+        if not cell.isLinked(cell.sw):
+            ctx.move_to(x_fw, y_c)
+            ctx.line_to(x_nw, y_s)
+
+        if not cell.isLinked(cell.nw):
+            ctx.move_to(x_fw, y_c)
+            ctx.line_to(x_nw, y_n)
+
+        if not cell.isLinked(cell.n):
+            ctx.move_to(x_nw, y_n)
+            ctx.line_to(x_ne, y_n)
+
+        if not cell.isLinked(cell.ne):
+            ctx.move_to(x_ne, y_n)
+            ctx.line_to(x_fe, y_c)
+
+        if not cell.isLinked(cell.se):
+            ctx.move_to(x_fe, y_c)
+            ctx.line_to(x_ne, y_s)
+
+        if not cell.isLinked(cell.s):
+            ctx.move_to(x_ne, y_s)
+            ctx.line_to(x_nw, y_s)
+
+        ctx.set_source_rgb(0, 0, 0)
+        ctx.set_line_width(wall_width)
+        ctx.stroke()
 
     surface.write_to_png(fname)
