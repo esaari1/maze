@@ -294,3 +294,89 @@ def save_hex(maze, fname):
         ctx.stroke()
 
     surface.write_to_png(fname)
+
+def save_triangle(maze, fname):
+    tri_width = 100
+    half_width = tri_width / 2
+    height = tri_width * math.sqrt(3) / 2
+    half_height = height / 2
+
+    wall_width = 0.001
+
+    img_width = int(tri_width * (maze.cols + 1) / 2)
+    img_height = int(height * maze.rows)
+
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, img_width, img_height)
+    ctx = cairo.Context(surface)
+
+    ctx.scale(img_width, img_height)
+
+    # background
+    ctx.set_source_rgb(1, 1, 1)
+    ctx.rectangle(0, 0, 1, 1)
+    ctx.fill()
+
+    ctx.translate(0.01, 0.01)
+    ctx.scale(0.98, 0.98)
+
+    if maze.dist:
+        for cell in maze.all_cells():
+            cx = half_width + cell.col * half_width
+            cy = half_height + cell.row * height
+
+            west_x = int(cx - half_width) / img_width
+            mid_x = int(cx) / img_width
+            east_x = int(cx + half_width) / img_width
+
+            if cell.upright():
+                apex_y = int(cy - half_height) / img_height
+                base_y = int(cy + half_height) / img_height
+            else:
+                apex_y = int(cy + half_height) / img_height
+                base_y = int(cy - half_height) / img_height
+
+            (red, green, blue) = gradient(maze.dist.intensity(cell), greens)
+            ctx.move_to(west_x, base_y)
+            ctx.line_to(east_x, base_y)
+            ctx.line_to(mid_x, apex_y)
+            ctx.close_path()
+            ctx.set_source_rgb(red, green, blue)
+            ctx.fill()
+
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.set_line_width(wall_width)
+
+    for cell in maze.all_cells():
+        cx = half_width + cell.col * half_width
+        cy = half_height + cell.row * height
+
+        west_x = int(cx - half_width) / img_width
+        mid_x = int(cx) / img_width
+        east_x = int(cx + half_width) / img_width
+
+        if cell.upright():
+            apex_y = int(cy - half_height) / img_height
+            base_y = int(cy + half_height) / img_height
+        else:
+            apex_y = int(cy + half_height) / img_height
+            base_y = int(cy - half_height) / img_height
+
+        if not cell.links[WEST]:
+            ctx.move_to(west_x, base_y)
+            ctx.line_to(mid_x, apex_y)
+            ctx.stroke()
+
+        if not cell.links[EAST]:
+            ctx.move_to(east_x, base_y)
+            ctx.line_to(mid_x, apex_y)
+            ctx.stroke()
+
+        no_south = cell.upright() and not cell.neighbors[SOUTH]
+        not_linked = not cell.upright() and not cell.links[NORTH]
+
+        if no_south or not_linked:
+            ctx.move_to(east_x, base_y)
+            ctx.line_to(west_x, base_y)
+            ctx.stroke()
+
+    surface.write_to_png(fname)

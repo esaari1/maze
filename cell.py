@@ -139,3 +139,29 @@ class HexCell(Cell):
             return self.se
         else:
             return self.ne
+
+
+class TriangleCell(Cell):
+    def __init__(self, row, col):
+        super().__init__(row, col)
+        self.neighbors = [None] * 4
+        self.links = [False] * 4
+
+    def upright(self):
+        return (self.row + self.col) % 2 == 0
+
+    def add_neighbor(self, other, dir):
+        if other:
+            self.neighbors[dir] = other
+            other.neighbors[(dir + 2) % 4] = self
+
+    def link(self, other):
+        idx = self.neighbors.index(other)
+        self.links[idx] = True
+        other.links[(idx + 2) % 4] = True
+
+    def isLinked(self, other):
+        if other in self.neighbors:
+            idx = self.neighbors.index(other)
+            return self.links[idx]
+        return False

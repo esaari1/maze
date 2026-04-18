@@ -1,7 +1,7 @@
 import math
 import random
 
-from cell import GridCell, PolarCell, HexCell
+from cell import GridCell, PolarCell, HexCell, TriangleCell
 
 NORTH = 0
 EAST = 1
@@ -175,3 +175,53 @@ class HexGrid(Grid):
             cell.add_neighbor(cell.s)
             cell.add_neighbor(cell.sw)
             cell.add_neighbor(cell.se)
+
+
+class TriangleGrid(Grid):
+    def __init__(self, rows, asTriangle):
+        self.asTriangle = asTriangle
+        if asTriangle:
+            if rows % 2 == 0:
+                rows += 1
+            cols = (rows * 2) - 1
+        else:
+            cols = int(rows * 1.7)
+            if cols % 2 == 0:
+                cols += 1
+
+        super().__init__(rows, cols)
+
+    def prepare(self):
+        if self.asTriangle:
+            self.maze = [[None for col in range(self.cols)] for row in range(self.rows)]
+            mid_col = int(self.cols / 2)
+
+            for row in range(self.rows):
+                col_count = ((row+1) * 2) - 1
+                hcol_count = int(col_count / 2)
+
+                for col in range(mid_col - hcol_count, mid_col + hcol_count + 1):
+                    self.maze[row][col] = TriangleCell(row, col)
+        else:
+            self.maze = [[TriangleCell(row, col) for col in range(self.cols)] for row in range(self.rows)]
+
+    def init_cells(self):
+        for cell in self.all_cells():
+            if cell:
+                if cell.upright():
+                    cell.add_neighbor(self.cell_at(cell.row + 1, cell.col), SOUTH)
+                else:
+                    cell.add_neighbor(self.cell_at(cell.row - 1, cell.col), NORTH)
+
+                cell.add_neighbor(self.cell_at(cell.row, cell.col + 1), EAST)
+                cell.add_neighbor(self.cell_at(cell.row, cell.col - 1), WEST)
+
+    def random_cell(self):
+        row = random.choice(self.maze)
+        return random.choice([c for c in row if c])
+
+    def all_cells(self):
+        for row in self.maze:
+            for cell in row:
+                if cell:
+                    yield cell
