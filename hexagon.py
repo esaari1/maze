@@ -8,6 +8,7 @@ import image
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--size', type=int, default=20)
 parser.add_argument('-a', '--algorithm', choices=['binary', 'side', 'aldous', 'wilson', 'hunt', 'recurse'], default='recurse')
+parser.add_argument('-c', '--color', choices=['green', 'sunburst', 'pink', 'pink2', 'purple'], default='sunburst')
 parser.add_argument('-d', '--distances', choices=['none', 'center', 'corner', 'random'], default='none')
 parser.add_argument('-f', '--filename', default='hex.png')
 args = parser.parse_args()
@@ -41,4 +42,4 @@ if args.distances != 'none':
     dist.calc_distances()
     maze.dist = dist
 
-image.save_hex(maze, args.filename)
+image.save_hex(maze, args.filename, args.color)

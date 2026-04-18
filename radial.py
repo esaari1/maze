@@ -8,6 +8,8 @@ import image
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--size', type=int, default=20)
 parser.add_argument('-a', '--algorithm', choices=['binary', 'side', 'aldous', 'wilson', 'hunt', 'recurse'], default='recurse')
+parser.add_argument('-c', '--color', choices=['green', 'sunburst', 'pink', 'pink2', 'purple'], default='sunburst')
+parser.add_argument('-d', '--distance', action="store_true")
 parser.add_argument('-f', '--filename', default='circle.png')
 args = parser.parse_args()
 
@@ -26,8 +28,9 @@ elif args.algorithm == 'hunt':
 else:
     Recurse(maze)
 
-dist = Distances(maze[0][0])
-dist.calc_distances()
-maze.dist = dist
+if args.distance:
+    dist = Distances(maze[0][0])
+    dist.calc_distances()
+    maze.dist = dist
 
-image.save_radial(maze, args.filename)
+image.save_radial(maze, args.filename, args.color)

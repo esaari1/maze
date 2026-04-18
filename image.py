@@ -16,7 +16,7 @@ sunburst = [
     (0, 1, 1, 1),
     (0.1, 1, 1, 0),
     (0.9, 1, 0, 0),
-    (1, 0, 0, 0)
+    (1, 0.5, 0, 0)
 ]
 
 pinks = [
@@ -30,9 +30,21 @@ pinks2 = [
 ]
 
 purple = [
-    (0, 1, 0, 1),
-    (1, 0.2, 0, 0.2)
+    (0, 1, 0.5, 1),
+    (1, 0.3, 0.15, 0.3)
 ]
+
+def get_colors(name):
+    if name == 'green':
+        return greens
+    if name == 'sunburst':
+        return sunburst
+    if name == 'pink':
+        return pinks
+    if name == 'pink2':
+        return pinks2
+    return purple
+
 
 def gradient(t, colors):
     idx = 0
@@ -119,7 +131,7 @@ def save_grid(maze, fname):
     surface.write_to_png(fname)
 
 
-def save_radial(maze, fname):
+def save_radial(maze, fname, color_name):
     size = 1000
     hsize = size / 2
     wall_width = 0.001
@@ -139,6 +151,7 @@ def save_radial(maze, fname):
     ctx.scale(0.98, 0.98)
 
     if maze.dist:
+        colors = get_colors(color_name)
         # center circle
         (red, green, blue) = gradient(0, sunburst)
         ctx.set_source_rgb(red, green, blue)
@@ -155,7 +168,7 @@ def save_radial(maze, fname):
                 theta_ccw = cell.col * theta
                 theta_cw = theta_ccw + theta
 
-                (red, green, blue) = gradient(maze.dist.intensity(cell), sunburst)
+                (red, green, blue) = gradient(maze.dist.intensity(cell), colors)
                 ctx.set_source_rgb(red, green, blue)
 
                 x1 = 0.5 + (inner_radius * math.cos(theta_cw))
@@ -201,7 +214,7 @@ def save_radial(maze, fname):
     surface.write_to_png(fname)
 
 
-def save_hex(maze, fname):
+def save_hex(maze, fname, color_name):
     hex_width = 100
     wall_width = 0.001
 
@@ -226,6 +239,7 @@ def save_hex(maze, fname):
     ctx.scale(0.98, 0.98)
 
     if maze.dist:
+        colors = get_colors(color_name)
         for cell in maze.all_cells():
             cx = hex_width/2 + 3 * cell.col * a_size
             cy = b_size + cell.row * hex_height
@@ -240,7 +254,7 @@ def save_hex(maze, fname):
             y_c = int(cy) / img_height
             y_s = int(cy + b_size) / img_height
 
-            (red, green, blue) = gradient(maze.dist.intensity(cell), greens)
+            (red, green, blue) = gradient(maze.dist.intensity(cell), colors)
             ctx.move_to(x_fw, y_c)
             ctx.line_to(x_nw, y_s)
             ctx.line_to(x_ne, y_s)
@@ -295,7 +309,7 @@ def save_hex(maze, fname):
 
     surface.write_to_png(fname)
 
-def save_triangle(maze, fname):
+def save_triangle(maze, fname, color):
     tri_width = 100
     half_width = tri_width / 2
     height = tri_width * math.sqrt(3) / 2
@@ -320,6 +334,7 @@ def save_triangle(maze, fname):
     ctx.scale(0.98, 0.98)
 
     if maze.dist:
+        colors = get_colors(color)
         for cell in maze.all_cells():
             cx = half_width + cell.col * half_width
             cy = half_height + cell.row * height
@@ -335,7 +350,7 @@ def save_triangle(maze, fname):
                 apex_y = int(cy + half_height) / img_height
                 base_y = int(cy - half_height) / img_height
 
-            (red, green, blue) = gradient(maze.dist.intensity(cell), greens)
+            (red, green, blue) = gradient(maze.dist.intensity(cell), colors)
             ctx.move_to(west_x, base_y)
             ctx.line_to(east_x, base_y)
             ctx.line_to(mid_x, apex_y)

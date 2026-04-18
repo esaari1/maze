@@ -160,8 +160,17 @@ class TriangleCell(Cell):
         self.links[idx] = True
         other.links[(idx + 2) % 4] = True
 
+    def hasLink(self):
+        return any(l for l in self.links)
+
     def isLinked(self, other):
         if other in self.neighbors:
             idx = self.neighbors.index(other)
             return self.links[idx]
         return False
+
+    def upNeighbor(self):
+        return self.neighbors[0]
+
+    def rightNeighbor(self):
+        return self.neighbors[1]
