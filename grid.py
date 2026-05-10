@@ -50,6 +50,20 @@ class Grid:
 
     def random_cell(self): return random.choice(random.choice(self.maze))
 
+    def braid(self, p):
+        cells = []
+        for row in self.maze:
+            for cell in row:
+                if cell: cells.append(cell)
+
+        random.shuffle(cells)
+        for cell in cells:
+            if cell and cell.linkCount() == 1 and random.random() <= p:
+                neighbors = [n for n in cell.neighbors if n and not cell.isLinked(n)]
+                best = [n for n in neighbors if n.linkCount() == 1]
+                best = neighbors if len(best) == 0 else best
+                cell.link(random.choice(best))
+
     def content_of(self, cell):
         if self.dist:
             if cell in self.dist.distances:

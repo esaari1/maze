@@ -57,7 +57,7 @@ def gradient(t, colors):
     return (r, g, b)
 
 
-def save_grid(maze, fname):
+def save_grid(maze, fname, color_name):
     img_width, img_height = maze.cols * 50, maze.rows * 50
     wall_width = 0.001
     wall_height = 0.001
@@ -85,10 +85,11 @@ def save_grid(maze, fname):
     ctx.scale(0.9, 0.9)
 
     if maze.dist:
+        colors = get_colors(color_name)
         for r in range(maze.rows):
             for c in range(maze.cols):
                 if maze[r][c] and maze[r][c] in maze.dist.distances:
-                    (red, green, blue) = gradient(maze.dist.intensity(maze[r][c]), greens)
+                    (red, green, blue) = gradient(maze.dist.intensity(maze[r][c]), colors)
                     ctx.rectangle(c * cell_w, r * cell_h, cell_w , cell_h)
                     ctx.set_source_rgb(red, green, blue)
                     ctx.fill()

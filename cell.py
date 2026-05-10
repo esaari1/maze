@@ -35,6 +35,9 @@ class Cell():
     def upNeighbor(self): pass
     def rightNeighbor(self): pass
 
+    def linkCount(self):
+        return len(self.links)
+
 
 class GridCell(Cell):
     def __init__(self, row, col):
@@ -62,6 +65,10 @@ class GridCell(Cell):
 
     def rightNeighbor(self):
         return self.neighbors[1]
+
+    def linkCount(self):
+        return len([l for l in self.links if l])
+
 
 class PolarCell(Cell):
     def __init__(self, row, col):
@@ -174,3 +181,6 @@ class TriangleCell(Cell):
 
     def rightNeighbor(self):
         return self.neighbors[1]
+
+    def linkCount(self):
+        return len([l for l in self.links if l])
