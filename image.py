@@ -6,6 +6,9 @@ EAST = 1
 SOUTH = 2
 WEST = 3
 
+wall_width = 0.001
+wall_height = 0.001
+
 greens = [
     (0, .8, 1, .8),
     (0.5, 0, 1, 0),
@@ -56,11 +59,81 @@ def gradient(t, colors):
     b = colors[idx][3] + t * (colors[idx+1][3] - colors[idx][3])
     return (r, g, b)
 
+def render_cell_no_inset(ctx, maze, cell_w, cell_h):
+    ctx.set_line_width(wall_width)
+    for r in range(maze.rows):
+        for c in range(maze.cols):
+            if maze[r][c]:
+                if not maze[r][c].links[NORTH]:
+                    ctx.move_to(c * cell_w, r * cell_h)
+                    ctx.rel_line_to(cell_w, 0)
 
-def save_grid(maze, fname, color_name):
+                if not maze[r][c].links[EAST]:
+                    ctx.move_to((c + 1) * cell_w, r * cell_h)
+                    ctx.rel_line_to(0, cell_h)
+
+                if not maze[r][c].links[SOUTH]:
+                    ctx.move_to(c * cell_w, (r + 1) * cell_h)
+                    ctx.rel_line_to(cell_w, 0)
+
+                if not maze[r][c].links[WEST]:
+                    ctx.move_to(c * cell_w, r * cell_h)
+                    ctx.rel_line_to(0, cell_h)
+    ctx.stroke()
+
+
+def draw_line(ctx, x1, y1, x2, y2):
+    ctx.move_to(x1, y1)
+    ctx.line_to(x2, y2)
+
+
+def render_cell_with_inset(ctx, maze, cell_w, cell_h, inset):
+    inset_w = cell_w * inset
+    inset_h = cell_h * inset
+
+    ctx.set_line_width(wall_width)
+
+    for r in range(maze.rows):
+        for c in range(maze.cols):
+            x1 = c * cell_w
+            x2 = x1 + inset_w
+            x4 = x1 + cell_w
+            x3 = x4 - inset
+
+            y1 = r * cell_h
+            y2 = y1 + inset_h
+            y4 = y1 + cell_h
+            y3 = y4 - inset
+
+            if maze[r][c]:
+                if maze[r][c].links[NORTH]:
+                    draw_line(ctx, x2, y1, x2, y2)
+                    draw_line(ctx, x3, y1, x3, y2)
+                else:
+                    draw_line(ctx, x2, y2, x3, y2)
+
+                if maze[r][c].links[EAST]:
+                    draw_line(ctx, x3, y2, x4, y2)
+                    draw_line(ctx, x3, y3, x4, y3)
+                else:
+                    draw_line(ctx, x3, y2, x3, y3)
+
+                if maze[r][c].links[SOUTH]:
+                    draw_line(ctx, x2, y3, x2, y4)
+                    draw_line(ctx, x3, y3, x3, y4)
+                else:
+                    draw_line(ctx, x2, y3, x3, y3)
+
+                if maze[r][c].links[WEST]:
+                    draw_line(ctx, x1, y2, x2, y2)
+                    draw_line(ctx, x1, y3, x2, y3)
+                else:
+                    draw_line(ctx, x2, y2, x2, y3)
+    ctx.stroke()
+
+
+def save_grid(maze, fname, color_name, inset):
     img_width, img_height = maze.cols * 50, maze.rows * 50
-    wall_width = 0.001
-    wall_height = 0.001
 
     if maze.cols > maze.rows:
         img_width = int(maze.cols / maze.rows * img_height)
@@ -96,38 +169,10 @@ def save_grid(maze, fname, color_name):
 
     ctx.set_source_rgb(0, 0, 0)
 
-    for r in range(maze.rows):
-        for c in range(maze.cols):
-            if maze[r][c] and not maze[r][c].links[NORTH]:
-                ctx.move_to(c * cell_w, r * cell_h)
-                ctx.rel_line_to(cell_w, 0)
-                ctx.set_line_width(wall_width)
-                ctx.stroke()
-
-            if maze[r][c] and not maze[r][c].links[EAST]:
-                ctx.move_to((c + 1) * cell_w, r * cell_h)
-                ctx.rel_line_to(0, cell_h)
-                ctx.set_line_width(wall_height)
-                ctx.stroke()
-
-            if maze[r][c] and not maze[r][c].links[SOUTH]:
-                ctx.move_to(c * cell_w, (r + 1) * cell_h)
-                ctx.rel_line_to(cell_w, 0)
-                ctx.set_line_width(wall_width)
-                ctx.stroke()
-
-            if maze[r][c] and not maze[r][c].links[WEST]:
-                ctx.move_to(c * cell_w, r * cell_h)
-                ctx.rel_line_to(0, cell_h)
-                ctx.set_line_width(wall_height)
-                ctx.stroke()
-
-    # top and left size limes
-    # ctx.move_to(1, 0)
-    # ctx.line_to(0, 0)
-    # ctx.line_to(0, 1)
-    # ctx.set_source_rgb(0, 0, 0)
-    # ctx.stroke()
+    if inset == 0:
+        render_cell_no_inset(ctx, maze, cell_w, cell_h)
+    else:
+        render_cell_with_inset(ctx, maze, cell_w, cell_h, inset)
 
     surface.write_to_png(fname)
 
@@ -135,7 +180,6 @@ def save_grid(maze, fname, color_name):
 def save_radial(maze, fname, color_name):
     size = 1000
     hsize = size / 2
-    wall_width = 0.001
     cell_size = (hsize / maze.rows) / hsize / 2
 
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, size, size)
@@ -217,7 +261,6 @@ def save_radial(maze, fname, color_name):
 
 def save_hex(maze, fname, color_name):
     hex_width = 100
-    wall_width = 0.001
 
     #hex_width = size / len(maze)
     a_size = hex_width / 4
@@ -315,8 +358,6 @@ def save_triangle(maze, fname, color):
     half_width = tri_width / 2
     height = tri_width * math.sqrt(3) / 2
     half_height = height / 2
-
-    wall_width = 0.001
 
     img_width = int(tri_width * (maze.cols + 1) / 2)
     img_height = int(height * maze.rows)

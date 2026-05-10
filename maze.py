@@ -37,6 +37,7 @@ parser.add_argument('-b', '--braid', type=restricted_float, help='Remove dead en
 parser.add_argument('-c', '--color', choices=['green', 'sunburst', 'pink', 'pink2', 'purple'], default='sunburst')
 parser.add_argument('-d', '--distances', choices=['none', 'center', 'corner', 'random'], default='none')
 parser.add_argument('-f', '--filename', default='grid.png')
+parser.add_argument('-i', '--inset', type=restricted_float, help='Inset maze walls by a percent of cell size', default=0)
 parser.add_argument('-m', '--mask')
 parser.add_argument('-s', '--size', type=int, default=20)
 args = parser.parse_args()
@@ -68,4 +69,4 @@ if args.braid:
 
 calc_distances(maze, args.distances)
 #maze.printMaze()
-image.save_grid(maze, args.filename, args.color)
+image.save_grid(maze, args.filename, args.color, args.inset)
